@@ -1,0 +1,161 @@
+{
+  "app": "待辦事項",
+  "package": "tw.hoonsor.todo",
+  "description": "倬的待辦清單（Microsoft To Do 的替代品）：新增待辦、查詢清單、打勾完成。資料會同步到電腦網頁版。",
+  "api": 1,
+  "actions": [
+    {
+      "examples": [
+        "我有哪些待辦清單",
+        "待辦有幾個清單"
+      ],
+      "name": "list_list",
+      "description": "列出所有待辦清單與各自未完成的件數。",
+      "risk": "read",
+      "title": "列出清單",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "examples": [
+        "我今天有哪些待辦",
+        "工作清單還有什麼沒做",
+        "有哪些重要的待辦",
+        "最近有哪些要到期"
+      ],
+      "name": "todo_list",
+      "description": "唸出某個範圍的未完成待辦：我的一天、重要、已排定、全部，或指定清單名稱。",
+      "risk": "read",
+      "title": "查詢待辦",
+      "params": {
+        "type": "object",
+        "properties": {
+          "includeDone": {
+            "description": "也列出已完成的，預設 false",
+            "type": "boolean"
+          },
+          "scope": {
+            "description": "範圍；指定清單時用 list",
+            "type": "string",
+            "enum": [
+              "my_day",
+              "important",
+              "planned",
+              "all",
+              "list"
+            ]
+          },
+          "list": {
+            "description": "清單名稱（scope＝list 時必填，名稱可不完整）",
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "examples": [
+        "待辦，明天下午三點前交人事月報",
+        "提醒我週五下午四點買牛奶，放日常清單",
+        "每週一早上九點開晨會，標重要",
+        "加到我的一天：回覆教育部函釋"
+      ],
+      "name": "todo_add",
+      "description": "新增一筆待辦。沒說清單就放預設清單；提醒時間與到期日依倬說的換算。",
+      "risk": "reversible",
+      "title": "新增待辦",
+      "params": {
+        "type": "object",
+        "properties": {
+          "important": {
+            "description": "是否標為重要",
+            "type": "boolean"
+          },
+          "note": {
+            "description": "備註，可省略",
+            "type": "string"
+          },
+          "due": {
+            "description": "到期日 yyyy-MM-dd，可省略",
+            "type": "string"
+          },
+          "repeat": {
+            "description": "重複",
+            "type": "string",
+            "enum": [
+              "daily",
+              "weekdays",
+              "weekly",
+              "monthly",
+              "yearly"
+            ]
+          },
+          "myDay": {
+            "description": "是否加入我的一天",
+            "type": "boolean"
+          },
+          "title": {
+            "description": "待辦內容（1\u2013500 字，保留倬的原話重點）",
+            "type": "string"
+          },
+          "list": {
+            "description": "清單名稱，可省略",
+            "type": "string"
+          },
+          "remindAt": {
+            "description": "提醒時間 yyyy-MM-ddTHH:mm（當地時間），可省略",
+            "type": "string"
+          }
+        },
+        "required": ["title"]
+      }
+    },
+    {
+      "examples": [
+        "交人事月報那件做完了",
+        "把買牛奶打勾",
+        "取消剛剛那件的完成"
+      ],
+      "name": "todo_complete",
+      "description": "依名稱（可不完整）或 id 把待辦打勾；undone＝true 是取消完成。符合多筆時會請倬選。",
+      "risk": "reversible",
+      "title": "完成待辦",
+      "params": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "待辦 id（查詢結果裡有）",
+            "type": "string"
+          },
+          "title": {
+            "description": "待辦名稱，可不完整",
+            "type": "string"
+          },
+          "undone": {
+            "description": "取消完成，預設 false",
+            "type": "boolean"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "examples": [],
+      "name": "todo_delete",
+      "description": "刪除一筆待辦。一律先確認。",
+      "risk": "destructive",
+      "title": "刪除待辦",
+      "params": {
+        "type": "object",
+        "properties": {"id": {
+          "description": "待辦 id",
+          "type": "string"
+        }},
+        "required": ["id"]
+      }
+    }
+  ]
+}

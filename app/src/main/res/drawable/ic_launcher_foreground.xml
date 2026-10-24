@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 藍色圓圈打勾＋兩條待辦橫線 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FF6FA3EF" android:pathData="M42,30a12,12 0,1 1,0 24a12,12 0,1 1,0 -24z" />
+    <path android:strokeColor="#FF121620" android:strokeWidth="3.6" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" android:pathData="M36.5,42.5l4,4l7.5,-8" />
+    <path android:strokeColor="#FFECEFF6" android:strokeWidth="4" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M60,42h16" />
+    <path android:strokeColor="#FF8E97A8" android:strokeWidth="3.6" android:fillColor="#00000000" android:pathData="M42,60a10,10 0,1 1,0 20a10,10 0,1 1,0 -20z" />
+    <path android:strokeColor="#FF8E97A8" android:strokeWidth="4" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M60,70h16" />
+</vector>
