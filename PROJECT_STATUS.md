@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 待辦事項（APK-Todo）
 
-- 目前版本：v0.1.0（本機建置與模擬器驗證通過；尚未建立 GitHub repo、尚未發佈）
+- 目前版本：v0.1.0（CI 已發佈 latest，目前是 debug 簽章；模擬器驗證通過，尚未實機驗證）
 - 程式碼：`D:\dev\APK-Todo`；專案資料夾 `D:\01-Project\57-待辦事項`（CODE_LOCATION.txt 指過來）
 - 套件：`tw.hoonsor.todo`（LAB：`tw.hoonsor.todo.lab`）
 - 後端：Supabase 專案 Raphael_Evaluation（`nhjyucwvqdkihklbaleo`，東京），表 `todo_members`、`todo_lists`、`todo_tasks`、`todo_steps`
@@ -19,8 +19,9 @@
 - [x] 語音總控說明書收錄待辦事項（hoonsor/APK-VoiceHub 22f4e9a）
 - [x] App 內更新（鬧鐘 APP 模組）、健康檢查頁
 - [x] 單元測試 26 個（SortKey、Repeat、到期分段、名稱比對、智慧清單、建議、搜尋、JSON 對應、manifest 一致性）
-- [ ] 建立 GitHub repo `hoonsor/APK-Todo` 並推送（要倬確認公開與否）
-- [ ] 把 `hoonsor/APK-Todo` 加進 `setup-hoonsor-signing.ps1` 並由倬執行（共用簽章 Secrets）
+- [x] 建立 public repo `hoonsor/APK-Todo`、CI 綠燈、發佈 latest（2026-10-24）
+- [x] `hoonsor/APK-Todo` 已加進 `setup-hoonsor-signing.ps1`  ``
+- [ ] 倬在電腦 A 執行 `setup-hoonsor-signing.ps1`（寫入共用簽章 Secrets 後重跑 CI，latest 才是正式簽章，才能和語音總控互相呼叫）
 - [ ] Supabase 後台設定（倬，見下方）
 - [ ] 倬第一次登入後，把帳號加進 `todo_members`
 - [ ] 實機驗證
@@ -58,7 +59,7 @@
 - 網頁版尚未開始
 
 ## 下一步
-1. 倬決定 repo 公開與否 → 建立 `hoonsor/APK-Todo`、推送、加入共用簽章腳本並執行
+1. 倬執行 `setup-hoonsor-signing.ps1` → 重跑 CI（Actions 頁按 Re-run，或推一個 commit）
 2. 倬完成 Supabase 後台設定 → 登入 → Claude 加入 todo_members → 實機驗證清單
 3. 啟動網頁版工作階段（`todo-web`）
 4. 備份四件套
@@ -69,6 +70,10 @@
 - [ ] SortKey 字串排序鍵｜domain/Rules.kt｜拖曳排序通用
 
 ## 交接紀錄
+### 2026-10-24（續）／電腦 A
+- 完成：建立 public repo、CI 綠燈並發佈 latest（debug 簽章）；修正相容檢查測試寫死語音總控動作的問題（兩個 repo 同步修正）
+- 教訓：隨工具複製到各 APP 的測試不能讀所在 repo 的資料，要自帶範例
+
 ### 2026-10-24／電腦 A
 - 完成：v0.1.0 全部程式、Supabase 資料表與 RLS、26 個單元測試、模擬器驗證、語音總控說明書、所有文件
 - 決定＋原因：
