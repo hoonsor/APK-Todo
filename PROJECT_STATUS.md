@@ -20,7 +20,7 @@
 - [x] App 內更新（鬧鐘 APP 模組）、健康檢查頁
 - [x] 單元測試 26 個（SortKey、Repeat、到期分段、名稱比對、智慧清單、建議、搜尋、JSON 對應、manifest 一致性）
 - [x] 建立 public repo `hoonsor/APK-Todo`、CI 綠燈、發佈 latest（2026-10-24）
-- [x] `hoonsor/APK-Todo` 已加進 `setup-hoonsor-signing.ps1`  ``
+- [x] `hoonsor/APK-Todo` 已加進 `setup-hoonsor-signing.ps1` 的 `$Repos`
 - [ ] 倬在電腦 A 執行 `setup-hoonsor-signing.ps1`（寫入共用簽章 Secrets 後重跑 CI，latest 才是正式簽章，才能和語音總控互相呼叫）
 - [ ] Supabase 後台設定（倬，見下方）
 - [ ] 倬第一次登入後，把帳號加進 `todo_members`
