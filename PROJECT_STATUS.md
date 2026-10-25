@@ -1,6 +1,6 @@
 # PROJECT_STATUS — 待辦事項（APK-Todo）
 
-- 目前版本：v0.1.0（CI 已發佈 latest，目前是 debug 簽章；模擬器驗證通過，尚未實機驗證）
+- 目前版本：v0.1.0（正式版已發佈到 Releases，共用簽章，Obtainium 可直接追蹤；尚未實機驗證）
 - 程式碼：`D:\dev\APK-Todo`；專案資料夾 `D:\01-Project\57-待辦事項`（CODE_LOCATION.txt 指過來）
 - 套件：`tw.hoonsor.todo`（LAB：`tw.hoonsor.todo.lab`）
 - 後端：Supabase 專案 Raphael_Evaluation（`nhjyucwvqdkihklbaleo`，東京），表 `todo_members`、`todo_lists`、`todo_tasks`、`todo_steps`
