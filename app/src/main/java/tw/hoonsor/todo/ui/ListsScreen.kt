@@ -66,6 +66,12 @@ fun listColor(key: ListKey, lists: List<ListEntity>): Color = when (key) {
     else -> smartIcon(key).second
 }
 
+/** 清單的色點（自訂清單用點的飽和度與亮度；智慧清單用固定色） */
+fun listDotColor(key: ListKey, lists: List<ListEntity>): Color = when (key) {
+    is ListKey.Custom -> C.listDot(lists.firstOrNull { it.id == key.id }?.color ?: 0)
+    else -> smartIcon(key).second
+}
+
 fun syncText(s: SyncStatus, pending: Int): Pair<String, Color> = when (s) {
     SyncStatus.Running -> "同步中…" to C.muted
     is SyncStatus.Ok -> (if (pending > 0) "$pending 筆等待同步" else "已同步") to (if (pending > 0) C.muted else C.ok)

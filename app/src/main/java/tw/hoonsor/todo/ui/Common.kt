@@ -95,11 +95,12 @@ fun CheckCircle(done: Boolean, color: Color, size: Dp = 20.dp, desc: String, onC
 
 fun localDateOf(ms: Long): LocalDate = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDate()
 
-fun dayLabel(d: LocalDate, today: LocalDate): String = when (d) {
+/** 「今天」「明天」「昨天」，其他日期「10/30（四）」；[weekday] 為 false 時省略星期（小工具空間小） */
+fun dayLabel(d: LocalDate, today: LocalDate, weekday: Boolean = true): String = when (d) {
     today -> "今天"
     today.plusDays(1) -> "明天"
     today.minusDays(1) -> "昨天"
-    else -> "${d.monthValue}/${d.dayOfMonth}（${Repeat.WEEKDAY_NAMES[d.dayOfWeek.value - 1]}）"
+    else -> "${d.monthValue}/${d.dayOfMonth}" + if (weekday) "（${Repeat.WEEKDAY_NAMES[d.dayOfWeek.value - 1]}）" else ""
 }
 
 fun timeLabel(ms: Long): String {

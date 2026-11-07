@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.ColorFilter
 import androidx.glance.Image
 import androidx.glance.currentState
 import androidx.glance.state.PreferencesGlanceStateDefinition
@@ -80,9 +81,13 @@ import tw.hoonsor.todo.domain.ListKey
 import tw.hoonsor.todo.domain.SortMode
 import tw.hoonsor.todo.domain.Views
 import tw.hoonsor.todo.ui.MainActivity
+import tw.hoonsor.todo.ui.dayLabel
+import tw.hoonsor.todo.ui.listColor
+import tw.hoonsor.todo.ui.listDotColor
 import tw.hoonsor.todo.ui.theme.C
 import tw.hoonsor.todo.ui.theme.TodoTheme
 import java.time.LocalDate
+import androidx.compose.ui.graphics.Color
 import androidx.glance.text.Text as GText
 
 /**
@@ -93,7 +98,8 @@ class TodoWidget : GlanceAppWidget() {
 
     override val stateDefinition = PreferencesGlanceStateDefinition
 
-    private data class Data(val key: ListKey, val title: String, val open: List<TaskEntity>, val showLogin: Boolean, val today: LocalDate)
+    /** [accent]：這個清單在 APP 裡的顏色（標題、＋、今天到期），切換清單後跟著換 */
+    private data class Data(val key: ListKey, val title: String, val accent: Color, val open: List<TaskEntity>, val showLogin: Boolean, val today: LocalDate)
 
     private suspend fun load(widgetId: Int): Data {
         val key = ListKey.parse(Graph.settings.widgetList(widgetId))
@@ -101,7 +107,7 @@ class TodoWidget : GlanceAppWidget() {
         val lists = Graph.repo.dao.lists()
         val all = Graph.repo.dao.tasks()
         val open = Views.sort(Views.filter(key, all, today).filter { !it.done }, SortMode.DUE).take(40)
-        return Data(key, Views.title(key, lists), open, !Graph.api.signedIn && all.isEmpty(), today)
+        return Data(key, Views.title(key, lists), listColor(key, lists), open, !Graph.api.signedIn && all.isEmpty(), today)
     }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -112,14 +118,14 @@ class TodoWidget : GlanceAppWidget() {
             val version = currentState<Preferences>()[VERSION] ?: 0L
             var data by remember { mutableStateOf(first) }
             LaunchedEffect(version) { data = load(widgetId) }
-            val (key, title, open, showLogin, today) = data
+            val (key, title, accent, open, showLogin, today) = data
             GColumn(
                 GlanceModifier.gFillMaxSize().gBackground(ColorProvider(C.panel)).cornerRadius(22.dp).gPadding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
             ) {
                 GRow(GlanceModifier.gFillMaxWidth(), verticalAlignment = GAlignment.CenterVertically) {
                     GText(
                         "$title ▾",
-                        style = TextStyle(color = ColorProvider(C.accent), fontSize = 17.sp, fontWeight = FontWeight.Bold),
+                        style = TextStyle(color = ColorProvider(accent), fontSize = 17.sp, fontWeight = FontWeight.Bold),
                         modifier = GlanceModifier.gPadding(vertical = 10.dp, horizontal = 4.dp)
                             .clickable(actionStartActivity(pickerIntent(context, widgetId))),
                     )
@@ -130,14 +136,14 @@ class TodoWidget : GlanceAppWidget() {
                             .clickable(actionStartActivity(addIntent(context, key))),
                         contentAlignment = GAlignment.Center,
                     ) {
-                        Image(ImageProvider(R.drawable.ic_plus), "新增工作", GlanceModifier.gSize(20.dp))
+                        Image(ImageProvider(R.drawable.ic_plus), "新增工作", GlanceModifier.gSize(20.dp), colorFilter = ColorFilter.tint(ColorProvider(accent)))
                     }
                 }
                 when {
                     showLogin -> Hint("打開待辦事項 APP 登入")
                     open.isEmpty() -> Hint("這裡沒有未完成的待辦")
                     else -> LazyColumn(GlanceModifier.gFillMaxSize()) {
-                        items(open, itemId = { it.id.hashCode().toLong() }) { t -> WidgetRow(context, t, today) }
+                        items(open, itemId = { it.id.hashCode().toLong() }) { t -> WidgetRow(context, t, today, accent) }
                     }
                 }
             }
@@ -150,7 +156,7 @@ class TodoWidget : GlanceAppWidget() {
     }
 
     @androidx.compose.runtime.Composable
-    private fun WidgetRow(context: Context, t: TaskEntity, today: LocalDate) {
+    private fun WidgetRow(context: Context, t: TaskEntity, today: LocalDate, accent: Color) {
         GColumn {
             GRow(
                 GlanceModifier.gFillMaxWidth().gBackground(ColorProvider(C.surface)).cornerRadius(8.dp).gPadding(horizontal = 8.dp),
@@ -167,20 +173,11 @@ class TodoWidget : GlanceAppWidget() {
                     style = TextStyle(color = ColorProvider(C.text), fontSize = 14.sp),
                     modifier = GlanceModifier.defaultWeight().gPadding(vertical = 12.dp).clickable(actionStartActivity(openIntent(context, t.id))),
                 )
-                val (label, color) = dueLabel(t, today)
-                if (label.isNotEmpty()) GText(label, style = TextStyle(color = ColorProvider(color), fontSize = 11.sp), modifier = GlanceModifier.gPadding(start = 6.dp))
+                widgetDueLabel(t, today, accent)?.let { (label, color) ->
+                    GText(label, maxLines = 1, style = TextStyle(color = ColorProvider(color), fontSize = 12.sp), modifier = GlanceModifier.gPadding(start = 6.dp, end = 4.dp))
+                }
             }
             GSpacer(GlanceModifier.gHeight(4.dp))
-        }
-    }
-
-    private fun dueLabel(t: TaskEntity, today: LocalDate): Pair<String, androidx.compose.ui.graphics.Color> {
-        val d = t.due ?: return "" to C.muted
-        return when (DueSection.of(d, today)) {
-            DueSection.OVERDUE -> "${d.monthValue}/${d.dayOfMonth}" to C.overdue
-            DueSection.TODAY -> "今天" to C.accent
-            DueSection.TOMORROW -> "明天" to C.muted
-            else -> "${d.monthValue}/${d.dayOfMonth}" to C.muted
         }
     }
 
@@ -217,6 +214,20 @@ class TodoWidget : GlanceAppWidget() {
     }
 }
 
+/**
+ * 小工具待辦列右側的到期日：文字與 APP 的 [dayLabel] 一致（省略星期），
+ * 逾期紅、今天用清單色、其他灰；沒有到期日回傳 null。
+ */
+internal fun widgetDueLabel(t: TaskEntity, today: LocalDate, accent: Color): Pair<String, Color>? {
+    val d = t.due ?: return null
+    val color = when (DueSection.of(d, today)) {
+        DueSection.OVERDUE -> C.overdue
+        DueSection.TODAY -> accent
+        else -> C.muted
+    }
+    return dayLabel(d, today, weekday = false) to color
+}
+
 class CompleteAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val id = parameters[TASK] ?: return
@@ -239,10 +250,10 @@ class WidgetListPickerActivity : ComponentActivity() {
         val widgetId = intent.getIntExtra(TodoWidget.EXTRA_WIDGET, -1)
         setContent {
             TodoTheme {
-                var options by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+                var options by remember { mutableStateOf<List<Triple<String, String, Color>>>(emptyList()) }
                 LaunchedEffect(Unit) {
                     val lists = Graph.repo.dao.lists()
-                    options = ListKey.SMART.map { it.wire to Views.title(it, lists) } + lists.map { it.id to it.name }
+                    options = (ListKey.SMART + lists.map { ListKey.Custom(it.id) }).map { Triple(it.wire, Views.title(it, lists), listDotColor(it, lists)) }
                 }
                 val current = Graph.settings.widgetList(widgetId)
                 Box(Modifier.fillMaxSize().background(C.scrim).clickable { finish() }, contentAlignment = Alignment.Center) {
@@ -252,7 +263,7 @@ class WidgetListPickerActivity : ComponentActivity() {
                             .heightIn(max = 520.dp).verticalScroll(rememberScrollState()),
                     ) {
                         Text("小工具要顯示哪個清單？", color = C.muted, fontSize = 13.sp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
-                        options.forEach { (key, name) ->
+                        options.forEach { (key, name, dot) ->
                             Row(
                                 Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable {
                                     Graph.settings.setWidgetList(widgetId, key)
@@ -262,9 +273,10 @@ class WidgetListPickerActivity : ComponentActivity() {
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
-                                Box(Modifier.size(10.dp).clip(RoundedCornerShape(5.dp)).background(if (key == current) C.accent else C.line))
-                                Text(name, color = C.text, fontSize = 16.sp)
+                                Box(Modifier.size(10.dp).clip(RoundedCornerShape(5.dp)).background(dot))
+                                Text(name, color = C.text, fontSize = 16.sp, fontWeight = if (key == current) androidx.compose.ui.text.font.FontWeight.Bold else null)
                                 Spacer(Modifier.weight(1f))
+                                if (key == current) Text("目前", color = C.muted, fontSize = 12.sp)
                             }
                         }
                     }
