@@ -91,8 +91,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.glance.text.Text as GText
 
 /**
- * 桌面小工具：顯示一個清單的未完成待辦，標題「清單名稱▾」切換清單（每個小工具各自記住），
- * 圓圈直接打勾完成，「＋」快速新增。資料來自 Room，Repository 修改後會呼叫 [refresh]。
+ * 桌面小工具（版面仿 Microsoft To Do）：顯示一個清單的未完成待辦，標題「清單名稱⌄」切換清單（每個小工具各自記住），
+ * 圓圈直接打勾完成、星號切換重要；標題列有重新整理、「＋」快速新增、設定。
+ * 資料來自 Room，Repository 修改後會呼叫 [refresh]。
  */
 class TodoWidget : GlanceAppWidget() {
 
@@ -120,33 +121,39 @@ class TodoWidget : GlanceAppWidget() {
             LaunchedEffect(version) { data = load(widgetId) }
             val (key, title, accent, open, showLogin, today) = data
             GColumn(
-                GlanceModifier.gFillMaxSize().gBackground(ColorProvider(C.panel)).cornerRadius(22.dp).gPadding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+                GlanceModifier.gFillMaxSize().gBackground(ColorProvider(C.panel)).cornerRadius(22.dp).gPadding(start = 8.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
             ) {
+                // 標題列（仿 Microsoft To Do）：標誌、清單名稱⌄、件數 … 重新整理、新增、設定
                 GRow(GlanceModifier.gFillMaxWidth(), verticalAlignment = GAlignment.CenterVertically) {
-                    GText(
-                        "$title ▾",
-                        style = TextStyle(color = ColorProvider(accent), fontSize = 17.sp, fontWeight = FontWeight.Bold),
-                        modifier = GlanceModifier.gPadding(vertical = 10.dp, horizontal = 4.dp)
+                    IconButton(R.drawable.ic_w_logo, "打開待辦事項", accent, actionStartActivity(homeIntent(context)), iconSize = 24.dp)
+                    GRow(
+                        GlanceModifier.defaultWeight().gPadding(start = 2.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
                             .clickable(actionStartActivity(pickerIntent(context, widgetId))),
-                    )
-                    GText(open.size.toString(), style = TextStyle(color = ColorProvider(C.muted), fontSize = 12.sp))
-                    GSpacer(GlanceModifier.defaultWeight())
-                    GBox(
-                        GlanceModifier.gSize(44.dp).cornerRadius(22.dp).gBackground(ColorProvider(C.surfaceHi))
-                            .clickable(actionStartActivity(addIntent(context, key))),
-                        contentAlignment = GAlignment.Center,
+                        verticalAlignment = GAlignment.CenterVertically,
                     ) {
-                        Image(ImageProvider(R.drawable.ic_plus), "新增工作", GlanceModifier.gSize(20.dp), colorFilter = ColorFilter.tint(ColorProvider(accent)))
+                        GText(title, maxLines = 1, style = TextStyle(color = ColorProvider(accent), fontSize = 17.sp, fontWeight = FontWeight.Bold))
+                        Image(ImageProvider(R.drawable.ic_w_chevron), "切換清單", GlanceModifier.gSize(20.dp).gPadding(start = 4.dp), colorFilter = ColorFilter.tint(ColorProvider(C.text)))
+                        if (open.isNotEmpty()) GText(open.size.toString(), style = TextStyle(color = ColorProvider(C.muted), fontSize = 12.sp), modifier = GlanceModifier.gPadding(start = 4.dp))
                     }
+                    IconButton(R.drawable.ic_w_refresh, "重新整理", C.text, actionRunCallback<RefreshAction>())
+                    IconButton(R.drawable.ic_plus, "新增工作", C.text, actionStartActivity(addIntent(context, key)))
+                    IconButton(R.drawable.ic_w_settings, "設定", C.text, actionStartActivity(settingsIntent(context)))
                 }
                 when {
                     showLogin -> Hint("打開待辦事項 APP 登入")
                     open.isEmpty() -> Hint("這裡沒有未完成的待辦")
                     else -> LazyColumn(GlanceModifier.gFillMaxSize()) {
-                        items(open, itemId = { it.id.hashCode().toLong() }) { t -> WidgetRow(context, t, today, accent) }
+                        items(open, itemId = { it.id.hashCode().toLong() }) { t -> WidgetRow(context, t, today, accent, first = t.id == open.first().id) }
                     }
                 }
             }
+        }
+    }
+
+    @androidx.compose.runtime.Composable
+    private fun IconButton(icon: Int, desc: String, tint: Color, action: androidx.glance.action.Action, iconSize: androidx.compose.ui.unit.Dp = 22.dp) {
+        GBox(GlanceModifier.gSize(40.dp).cornerRadius(20.dp).clickable(action), contentAlignment = GAlignment.Center) {
+            Image(ImageProvider(icon), desc, GlanceModifier.gSize(iconSize), colorFilter = ColorFilter.tint(ColorProvider(tint)))
         }
     }
 
@@ -155,29 +162,41 @@ class TodoWidget : GlanceAppWidget() {
         GText(text, style = TextStyle(color = ColorProvider(C.muted), fontSize = 14.sp), modifier = GlanceModifier.gPadding(12.dp))
     }
 
+    /** 一列待辦：清單色圓圈（打勾）、標題（開詳細）、到期日、星號（切換重要）；列與列之間一條細線 */
     @androidx.compose.runtime.Composable
-    private fun WidgetRow(context: Context, t: TaskEntity, today: LocalDate, accent: Color) {
-        GColumn {
-            GRow(
-                GlanceModifier.gFillMaxWidth().gBackground(ColorProvider(C.surface)).cornerRadius(8.dp).gPadding(horizontal = 8.dp),
-                verticalAlignment = GAlignment.CenterVertically,
-            ) {
+    private fun WidgetRow(context: Context, t: TaskEntity, today: LocalDate, accent: Color, first: Boolean) {
+        GColumn(GlanceModifier.gFillMaxWidth()) {
+            if (!first) GBox(GlanceModifier.gFillMaxWidth().gPadding(start = 44.dp, end = 8.dp)) {
+                GSpacer(GlanceModifier.gFillMaxWidth().gHeight(1.dp).gBackground(ColorProvider(C.line)))
+            }
+            GRow(GlanceModifier.gFillMaxWidth().gHeight(52.dp), verticalAlignment = GAlignment.CenterVertically) {
                 GBox(
                     GlanceModifier.gSize(44.dp).clickable(actionRunCallback<CompleteAction>(actionParametersOf(CompleteAction.TASK to t.id))),
                     contentAlignment = GAlignment.Center,
                 ) {
-                    Image(ImageProvider(R.drawable.ic_circle), "完成「${t.title}」", GlanceModifier.gSize(20.dp))
+                    Image(ImageProvider(R.drawable.ic_circle), "完成「${t.title}」", GlanceModifier.gSize(22.dp), colorFilter = ColorFilter.tint(ColorProvider(accent)))
                 }
                 GText(
                     t.title, maxLines = 1,
-                    style = TextStyle(color = ColorProvider(C.text), fontSize = 14.sp),
-                    modifier = GlanceModifier.defaultWeight().gPadding(vertical = 12.dp).clickable(actionStartActivity(openIntent(context, t.id))),
+                    style = TextStyle(color = ColorProvider(C.text), fontSize = 15.sp),
+                    modifier = GlanceModifier.defaultWeight().gPadding(start = 4.dp, top = 14.dp, bottom = 14.dp).clickable(actionStartActivity(openIntent(context, t.id))),
                 )
                 widgetDueLabel(t, today, accent)?.let { (label, color) ->
-                    GText(label, maxLines = 1, style = TextStyle(color = ColorProvider(color), fontSize = 12.sp), modifier = GlanceModifier.gPadding(start = 6.dp, end = 4.dp))
+                    GText(label, maxLines = 1, style = TextStyle(color = ColorProvider(color), fontSize = 12.sp), modifier = GlanceModifier.gPadding(start = 6.dp))
+                }
+                GBox(
+                    GlanceModifier.gSize(44.dp).clickable(
+                        actionRunCallback<StarAction>(actionParametersOf(CompleteAction.TASK to t.id, StarAction.ON to !t.important)),
+                    ),
+                    contentAlignment = GAlignment.Center,
+                ) {
+                    Image(
+                        ImageProvider(if (t.important) R.drawable.ic_w_star_on else R.drawable.ic_w_star),
+                        if (t.important) "取消重要「${t.title}」" else "標為重要「${t.title}」",
+                        GlanceModifier.gSize(22.dp), colorFilter = ColorFilter.tint(ColorProvider(accent)),
+                    )
                 }
             }
-            GSpacer(GlanceModifier.gHeight(4.dp))
         }
     }
 
@@ -203,6 +222,14 @@ class TodoWidget : GlanceAppWidget() {
             Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_QUICK_ADD, key.wire)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .setData(android.net.Uri.parse("todo://add/${key.wire}"))
+
+        private fun homeIntent(context: Context) =
+            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        private fun settingsIntent(context: Context) =
+            Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_SETTINGS, true)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .setData(android.net.Uri.parse("todo://settings"))
 
         private fun openIntent(context: Context, taskId: String) =
             Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TASK, taskId)
@@ -236,6 +263,26 @@ class CompleteAction : ActionCallback {
 
     companion object {
         val TASK = ActionParameters.Key<String>("task")
+    }
+}
+
+/** 星號：切換重要（離線也能用，之後背景同步） */
+class StarAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        val id = parameters[CompleteAction.TASK] ?: return
+        Graph.repo.setImportant(id, parameters[ON] ?: true)
+    }
+
+    companion object {
+        val ON = ActionParameters.Key<Boolean>("on")
+    }
+}
+
+/** 重新整理：立即和 Supabase 同步一次（沒登入或斷網時只重讀本機） */
+class RefreshAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        if (Graph.api.signedIn) runCatching { Graph.sync.sync() }
+        TodoWidget.refresh(context)
     }
 }
 

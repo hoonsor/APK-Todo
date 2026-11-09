@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
         handle(intent)
     }
 
-    /** 從通知、小工具進來：開待辦詳細或快速新增 */
+    /** 從通知、小工具進來：開待辦詳細、快速新增或設定 */
     private fun handle(intent: Intent?) {
         intent ?: return
         // LAB 版測試入口：adb shell am start -n tw.hoonsor.todo.lab/tw.hoonsor.todo.ui.MainActivity --ez preview true
@@ -76,10 +76,12 @@ class MainActivity : ComponentActivity() {
         intent.getStringExtra(EXTRA_QUICK_ADD)?.let { key ->
             if (state.screen != Screen.Login) state.go(Screen.Tasks(ListKey.parse(key), quickAdd = true))
         }
+        if (intent.getBooleanExtra(EXTRA_SETTINGS, false) && state.screen != Screen.Login && state.screen != Screen.Settings) state.go(Screen.Settings)
     }
 
     companion object {
         const val EXTRA_TASK = Reminders.EXTRA_TASK
         const val EXTRA_QUICK_ADD = "quickAdd"
+        const val EXTRA_SETTINGS = "settings"
     }
 }

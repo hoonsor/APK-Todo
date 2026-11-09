@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 手繪線條圖示（24×24、圓角端點）；顏色由小工具 ColorFilter.tint 指定 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FFFFFFFF" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" android:strokeWidth="1.8" android:pathData="M18.79,10.30L20.88,10.52L20.88,13.48L18.79,13.70L18.00,15.60L19.32,17.23L17.23,19.32L15.60,18.00L13.70,18.79L13.48,20.88L10.52,20.88L10.30,18.79L8.40,18.00L6.77,19.32L4.68,17.23L6.00,15.60L5.21,13.70L3.12,13.48L3.12,10.52L5.21,10.30L6.00,8.40L4.68,6.77L6.77,4.68L8.40,6.00L10.30,5.21L10.52,3.12L13.48,3.12L13.70,5.21L15.60,6.00L17.23,4.68L19.32,6.77L18.00,8.40Z" />
+    <path android:strokeColor="#FFFFFFFF" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" android:strokeWidth="1.8" android:pathData="M12,9a3,3 0 1 0 0,6a3,3 0 1 0 0,-6z" />
+</vector>
