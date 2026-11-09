@@ -42,7 +42,7 @@ app/src/main/java/
    ├─ data/             Db.kt（Room：lists、tasks、steps、outbox）、Repository.kt（唯一寫入入口）、Prefs.kt（設定、Keystore 金庫）
    ├─ sync/             Supabase.kt（Email 驗證碼登入、REST）、Mapping.kt（實體↔JSON、只送改過欄位）、SyncEngine.kt（推送／拉取、Worker、Realtime）
    ├─ reminder/         精準鬧鐘、通知（完成／延後 10 分鐘）、開機重排
-   ├─ widget/           Glance 小工具、清單選擇視窗、打勾 callback
+   ├─ widget/           Glance 小工具（TodoWidget：打勾、星號、重新整理 callback）、WidgetSheetActivity（＋新增／設定／切換清單的底部浮動面板）
    ├─ agent/            TodoAgentCatalog（describe）、AgentProvider（list_list、todo_list、todo_add、todo_complete、todo_delete）
    ├─ update/           App 內更新（從鬧鐘 APP 複製）
    └─ ui/               AppState（導覽、復原）、各畫面、Icons（手繪）、theme（唯一色票）

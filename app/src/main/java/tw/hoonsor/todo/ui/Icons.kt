@@ -43,5 +43,6 @@ object Glyph {
     val Lines = line("lines", "M5 7h14M5 12h14M5 17h14")
     val Gear = line("gear", "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0 -6zM12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7")
     val Note = line("note", "M6 4h9l3 3v13H6zM9 11h6M9 15h6")
+    val ArrowUp = line("arrowUp", "M12 19V5M6 11l6-6 6 6")
     val Refresh = line("refresh", "M19.5 8.5a8 8 0 1 0 0.5 6", "M20 3.5v5h-5")
 }

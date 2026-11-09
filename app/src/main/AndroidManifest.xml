@@ -39,12 +39,13 @@
             </intent-filter>
         </activity>
 
-        <!-- 小工具標題「清單名稱▾」：選這個小工具要顯示的清單 -->
+        <!-- 小工具的底部浮動面板：「＋」快速新增、設定、切換清單 -->
         <activity
-            android:name=".widget.WidgetListPickerActivity"
+            android:name=".widget.WidgetSheetActivity"
             android:exported="false"
             android:excludeFromRecents="true"
-            android:taskAffinity="tw.hoonsor.todo.picker"
+            android:taskAffinity="tw.hoonsor.todo.sheet"
+            android:windowSoftInputMode="adjustResize|stateVisible"
             android:theme="@style/Theme.Todo.Dialog" />
 
         <receiver

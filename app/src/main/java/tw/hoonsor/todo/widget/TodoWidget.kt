@@ -93,6 +93,7 @@ import androidx.glance.text.Text as GText
 /**
  * 桌面小工具（版面仿 Microsoft To Do）：顯示一個清單的未完成待辦，標題「清單名稱⌄」切換清單（每個小工具各自記住），
  * 圓圈直接打勾完成、星號切換重要；標題列有重新整理、「＋」快速新增、設定。
+ * 「＋」、設定、切換清單都開 [WidgetSheetActivity] 底部浮動面板（仿 To Do），不開整個 APP。
  * 資料來自 Room，Repository 修改後會呼叫 [refresh]。
  */
 class TodoWidget : GlanceAppWidget() {
@@ -128,7 +129,7 @@ class TodoWidget : GlanceAppWidget() {
                     IconButton(R.drawable.ic_w_logo, "打開待辦事項", accent, actionStartActivity(homeIntent(context)), iconSize = 24.dp)
                     GRow(
                         GlanceModifier.defaultWeight().gPadding(start = 2.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
-                            .clickable(actionStartActivity(pickerIntent(context, widgetId))),
+                            .clickable(actionStartActivity(WidgetSheetActivity.intent(context, widgetId, WidgetSheetActivity.MODE_LISTS))),
                         verticalAlignment = GAlignment.CenterVertically,
                     ) {
                         GText(title, maxLines = 1, style = TextStyle(color = ColorProvider(accent), fontSize = 17.sp, fontWeight = FontWeight.Bold))
@@ -136,8 +137,8 @@ class TodoWidget : GlanceAppWidget() {
                         if (open.isNotEmpty()) GText(open.size.toString(), style = TextStyle(color = ColorProvider(C.muted), fontSize = 12.sp), modifier = GlanceModifier.gPadding(start = 4.dp))
                     }
                     IconButton(R.drawable.ic_w_refresh, "重新整理", C.text, actionRunCallback<RefreshAction>())
-                    IconButton(R.drawable.ic_plus, "新增工作", C.text, actionStartActivity(addIntent(context, key)))
-                    IconButton(R.drawable.ic_w_settings, "設定", C.text, actionStartActivity(settingsIntent(context)))
+                    IconButton(R.drawable.ic_plus, "新增工作", C.text, actionStartActivity(WidgetSheetActivity.intent(context, widgetId, WidgetSheetActivity.MODE_ADD)))
+                    IconButton(R.drawable.ic_w_settings, "設定", C.text, actionStartActivity(WidgetSheetActivity.intent(context, widgetId, WidgetSheetActivity.MODE_SETTINGS)))
                 }
                 when {
                     showLogin -> Hint("打開待辦事項 APP 登入")
@@ -213,30 +214,14 @@ class TodoWidget : GlanceAppWidget() {
             }
         }
 
-        private fun pickerIntent(context: Context, widgetId: Int) =
-            Intent(context, WidgetListPickerActivity::class.java).putExtra(EXTRA_WIDGET, widgetId)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-                .setData(android.net.Uri.parse("todo://widget/$widgetId")) // 讓每個小工具的 Intent 不同
-
-        private fun addIntent(context: Context, key: ListKey) =
-            Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_QUICK_ADD, key.wire)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                .setData(android.net.Uri.parse("todo://add/${key.wire}"))
-
         private fun homeIntent(context: Context) =
             Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        private fun settingsIntent(context: Context) =
-            Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_SETTINGS, true)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                .setData(android.net.Uri.parse("todo://settings"))
 
         private fun openIntent(context: Context, taskId: String) =
             Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TASK, taskId)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .setData(android.net.Uri.parse("todo://task/$taskId"))
 
-        const val EXTRA_WIDGET = "widgetId"
         private val VERSION = longPreferencesKey("version")
     }
 }
@@ -288,47 +273,4 @@ class RefreshAction : ActionCallback {
 
 class TodoWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TodoWidget()
-}
-
-/** 小工具標題點下去：選這個小工具要顯示的清單 */
-class WidgetListPickerActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val widgetId = intent.getIntExtra(TodoWidget.EXTRA_WIDGET, -1)
-        setContent {
-            TodoTheme {
-                var options by remember { mutableStateOf<List<Triple<String, String, Color>>>(emptyList()) }
-                LaunchedEffect(Unit) {
-                    val lists = Graph.repo.dao.lists()
-                    options = (ListKey.SMART + lists.map { ListKey.Custom(it.id) }).map { Triple(it.wire, Views.title(it, lists), listDotColor(it, lists)) }
-                }
-                val current = Graph.settings.widgetList(widgetId)
-                Box(Modifier.fillMaxSize().background(C.scrim).clickable { finish() }, contentAlignment = Alignment.Center) {
-                    Column(
-                        Modifier.padding(24.dp).fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(C.panel)
-                            .border(1.dp, C.line, RoundedCornerShape(18.dp)).padding(vertical = 10.dp)
-                            .heightIn(max = 520.dp).verticalScroll(rememberScrollState()),
-                    ) {
-                        Text("小工具要顯示哪個清單？", color = C.muted, fontSize = 13.sp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
-                        options.forEach { (key, name, dot) ->
-                            Row(
-                                Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable {
-                                    Graph.settings.setWidgetList(widgetId, key)
-                                    TodoWidget.refresh(applicationContext)
-                                    finish()
-                                }.padding(horizontal = 20.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Box(Modifier.size(10.dp).clip(RoundedCornerShape(5.dp)).background(dot))
-                                Text(name, color = C.text, fontSize = 16.sp, fontWeight = if (key == current) androidx.compose.ui.text.font.FontWeight.Bold else null)
-                                Spacer(Modifier.weight(1f))
-                                if (key == current) Text("目前", color = C.muted, fontSize = 12.sp)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 }

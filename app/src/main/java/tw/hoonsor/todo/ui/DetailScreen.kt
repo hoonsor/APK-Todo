@@ -252,7 +252,7 @@ private fun NewStepField(accent: Color, onAdd: (String) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DueDatePicker(initial: LocalDate, onDismiss: () -> Unit, onPick: (LocalDate) -> Unit) {
+internal fun DueDatePicker(initial: LocalDate, onDismiss: () -> Unit, onPick: (LocalDate) -> Unit) {
     val st = rememberDatePickerState(initialSelectedDateMillis = initial.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
     DatePickerDialog(
         onDismissRequest = onDismiss,
@@ -267,7 +267,7 @@ private fun DueDatePicker(initial: LocalDate, onDismiss: () -> Unit, onPick: (Lo
 /** 提醒：先選日期（預設今天或已設定的日期），再選時間 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ReminderPicker(current: Long?, today: LocalDate, onDismiss: () -> Unit, onPick: (Long) -> Unit) {
+internal fun ReminderPicker(current: Long?, today: LocalDate, onDismiss: () -> Unit, onPick: (Long) -> Unit) {
     val zone = ZoneId.systemDefault()
     val init = current?.let { Instant.ofEpochMilli(it).atZone(zone) }
     var date by remember { mutableStateOf<LocalDate?>(null) }
