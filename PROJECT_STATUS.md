@@ -62,7 +62,7 @@
 - 網頁版尚未開始
 
 ## 下一步
-0. 倬同意後推 `v0.1.1` tag 發版（小工具到期日＋清單色），手機更新後實機驗證第 7 項
+0. `v0.1.1` 已正式發版（2026-11-10，倬手機實測緊湊版 OK）；用 Obtainium 更新後，繼續實機驗證第 7 項的其餘項目
 1. 倬執行 `setup-hoonsor-signing.ps1` → 重跑 CI（Actions 頁按 Re-run，或推一個 commit）
 2. 倬完成 Supabase 後台設定 → 登入 → Claude 加入 todo_members → 實機驗證清單
 3. 啟動網頁版工作階段（`todo-web`）
@@ -74,6 +74,10 @@
 - [ ] SortKey 字串排序鍵｜domain/Rules.kt｜拖曳排序通用
 
 ## 交接紀錄
+### 2026-11-10（續）／電腦 A
+- 完成：倬手機實測緊湊版沒問題，同意發正式版；推 `v0.1.1` tag（指向 051d911），CI 成功，Release 不是預先發行版，含 Todo-v0.1.1.apk、Todo-LAB-v0.1.1.apk，Obtainium 可自動更新
+- 環境注意：D:\dev\APK-Todo 當時被另一個工作階段切到 `feat/default-list`，還有未提交的變更；這筆紀錄是在臨時 worktree 裡改 main，沒有碰那些變更
+
 
 ### 2026-11-10／電腦 A（v0.1.2 設定預設清單）
 - 完成：Repository.setDefaultList、清單編輯視窗加「設為預設清單」；單元測試通過；沒有在模擬器測（要登入正式 Supabase）。
