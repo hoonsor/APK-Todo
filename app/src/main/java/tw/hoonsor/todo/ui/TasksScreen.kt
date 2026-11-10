@@ -200,6 +200,9 @@ fun TasksScreen(state: AppState, key: ListKey, quickAdd: Boolean) {
                 state.showUndo("已刪除清單「${listEntity.name}」") { state.repo.restoreList(listEntity.id, ids) }
             }
         }
+    }, onMakeDefault = {
+        editList = false
+        state.launch { state.repo.setDefaultList(listEntity.id) }
     }) { name, color ->
         editList = false
         state.launch { state.repo.updateList(listEntity.id) { it.copy(name = name, color = color) } }

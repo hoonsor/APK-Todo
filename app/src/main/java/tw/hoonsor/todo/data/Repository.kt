@@ -64,6 +64,18 @@ class Repository(
         e
     }
 
+    /** 把某個清單設成預設（沒指定清單時新增到這裡，含語音與小工具）。先取消舊的再設新的，雲端「每人只能一個預設」的索引才不會擋 */
+    suspend fun setDefaultList(id: String) = write {
+        val target = dao.list(id) ?: return@write
+        if (target.isDefault) return@write
+        dao.lists().filter { it.isDefault }.forEach { old ->
+            dao.upsertList(old.copy(isDefault = false))
+            queueUpdate(Mapping.LISTS, old.id, Mapping.listDiff(old, old.copy(isDefault = false)))
+        }
+        dao.upsertList(target.copy(isDefault = true))
+        queueUpdate(Mapping.LISTS, id, Mapping.listDiff(target, target.copy(isDefault = true)))
+    }
+
     suspend fun addList(name: String, color: Int): ListEntity = write {
         val last = dao.lists().filterNot { it.isDefault }.maxOfOrNull { it.sortKey }
         val e = ListEntity(id = uuid(), name = name.trim().take(100), color = color, sortKey = SortKey.last(last), createdAt = now())

@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -144,6 +145,9 @@ fun ListsScreen(state: AppState) {
                     state.showUndo("已刪除清單「${l.name}」") { state.repo.restoreList(l.id, ids) }
                 }
             }
+        }, onMakeDefault = {
+            editing = null
+            state.launch { state.repo.setDefaultList(l.id) }
         }) { name, color ->
             editing = null
             state.launch { state.repo.updateList(l.id) { it.copy(name = name, color = color) } }
@@ -166,7 +170,7 @@ private fun ListRow(lead: @Composable () -> Unit, name: String, count: Int, onCl
 
 /** 新增或編輯清單：名稱＋顏色；預設清單不能刪 */
 @Composable
-fun ListDialog(list: ListEntity?, onDismiss: () -> Unit, onDelete: (() -> Unit)? = null, onSave: (String, Int) -> Unit) {
+fun ListDialog(list: ListEntity?, onDismiss: () -> Unit, onDelete: (() -> Unit)? = null, onMakeDefault: (() -> Unit)? = null, onSave: (String, Int) -> Unit) {
     var name by remember { mutableStateOf(list?.name.orEmpty()) }
     var color by remember { mutableIntStateOf(list?.color ?: 1) }
     AlertDialog(
@@ -184,7 +188,10 @@ fun ListDialog(list: ListEntity?, onDismiss: () -> Unit, onDelete: (() -> Unit)?
                         )
                     }
                 }
-                if (list?.isDefault == true) Text("這是預設清單，可以改名，但不能刪除。", color = C.muted, fontSize = 13.sp)
+                if (list?.isDefault == true) Text("這是預設清單：沒指定清單時（含語音、小工具）新增到這裡。可以改名，但不能刪除。", color = C.muted, fontSize = 13.sp)
+                else if (onMakeDefault != null) TextButton(onClick = onMakeDefault, contentPadding = PaddingValues(0.dp)) {
+                    Text("設為預設清單（沒指定清單時新增到這裡）", color = C.accent, fontSize = 14.sp)
+                }
             }
         },
         confirmButton = { TextButton(onClick = { if (name.isNotBlank()) onSave(name.trim(), color) }) { Text("儲存", color = C.accent) } },
