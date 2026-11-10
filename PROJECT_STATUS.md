@@ -72,6 +72,12 @@
 - [ ] SortKey 字串排序鍵｜domain/Rules.kt｜拖曳排序通用
 
 ## 交接紀錄
+### 2026-11-10／電腦 A
+- 完成：倬要小工具多顯示幾筆。改成緊湊版：列高 52→40dp、待辦字 15→14sp、到期日 12→11sp、標題 17→16sp，圓圈 20dp、星號 18dp，標題列按鈕 40→36dp，外框上下內距 6→4dp
+- 決定＋原因：圓圈與星號的點按區保留 40dp（倬說不要小到難點），所以列高不再往下壓
+- 驗證：測試全過、assembleRelease 成功；模擬器 LAB 截圖確認版面
+- 未完成：倬手機實測；推 `v0.1.1` tag 發版（要先問倬）
+
 ### 2026-11-09（續）／電腦 A
 - 完成：倬在手機測了 latest（To Do 風格版面 OK），再附 To Do 截圖：按小工具的＋、設定會在桌面跳出底部浮動面板。新增 `widget/WidgetSheetActivity.kt`（透明 Activity＋底部面板，三種模式 add／settings／lists），取代舊的 `WidgetListPickerActivity`（同一檔案裡的類別，已移除；Manifest 一併換掉）
 - 快速新增：圓圈＋輸入框（自動彈出鍵盤）＋↑送出；清單、設定到期日（今天／明天／下週一／選日期）、提醒我（重用 DetailScreen 的 `DueDatePicker`、`ReminderPicker`，改成 internal）；送出後清空可連續新增，`source = "widget"`

@@ -122,18 +122,18 @@ class TodoWidget : GlanceAppWidget() {
             LaunchedEffect(version) { data = load(widgetId) }
             val (key, title, accent, open, showLogin, today) = data
             GColumn(
-                GlanceModifier.gFillMaxSize().gBackground(ColorProvider(C.panel)).cornerRadius(22.dp).gPadding(start = 8.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+                GlanceModifier.gFillMaxSize().gBackground(ColorProvider(C.panel)).cornerRadius(22.dp).gPadding(start = 8.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
             ) {
                 // 標題列（仿 Microsoft To Do）：標誌、清單名稱⌄、件數 … 重新整理、新增、設定
                 GRow(GlanceModifier.gFillMaxWidth(), verticalAlignment = GAlignment.CenterVertically) {
-                    IconButton(R.drawable.ic_w_logo, "打開待辦事項", accent, actionStartActivity(homeIntent(context)), iconSize = 24.dp)
+                    IconButton(R.drawable.ic_w_logo, "打開待辦事項", accent, actionStartActivity(homeIntent(context)), iconSize = 22.dp)
                     GRow(
-                        GlanceModifier.defaultWeight().gPadding(start = 2.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
+                        GlanceModifier.defaultWeight().gPadding(start = 2.dp, top = 6.dp, bottom = 6.dp, end = 4.dp)
                             .clickable(actionStartActivity(WidgetSheetActivity.intent(context, widgetId, WidgetSheetActivity.MODE_LISTS))),
                         verticalAlignment = GAlignment.CenterVertically,
                     ) {
-                        GText(title, maxLines = 1, style = TextStyle(color = ColorProvider(accent), fontSize = 17.sp, fontWeight = FontWeight.Bold))
-                        Image(ImageProvider(R.drawable.ic_w_chevron), "切換清單", GlanceModifier.gSize(20.dp).gPadding(start = 4.dp), colorFilter = ColorFilter.tint(ColorProvider(C.text)))
+                        GText(title, maxLines = 1, style = TextStyle(color = ColorProvider(accent), fontSize = 16.sp, fontWeight = FontWeight.Bold))
+                        Image(ImageProvider(R.drawable.ic_w_chevron), "切換清單", GlanceModifier.gSize(18.dp).gPadding(start = 4.dp), colorFilter = ColorFilter.tint(ColorProvider(C.text)))
                         if (open.isNotEmpty()) GText(open.size.toString(), style = TextStyle(color = ColorProvider(C.muted), fontSize = 12.sp), modifier = GlanceModifier.gPadding(start = 4.dp))
                     }
                     IconButton(R.drawable.ic_w_refresh, "重新整理", C.text, actionRunCallback<RefreshAction>())
@@ -152,8 +152,8 @@ class TodoWidget : GlanceAppWidget() {
     }
 
     @androidx.compose.runtime.Composable
-    private fun IconButton(icon: Int, desc: String, tint: Color, action: androidx.glance.action.Action, iconSize: androidx.compose.ui.unit.Dp = 22.dp) {
-        GBox(GlanceModifier.gSize(40.dp).cornerRadius(20.dp).clickable(action), contentAlignment = GAlignment.Center) {
+    private fun IconButton(icon: Int, desc: String, tint: Color, action: androidx.glance.action.Action, iconSize: androidx.compose.ui.unit.Dp = 20.dp) {
+        GBox(GlanceModifier.gSize(36.dp).cornerRadius(18.dp).clickable(action), contentAlignment = GAlignment.Center) {
             Image(ImageProvider(icon), desc, GlanceModifier.gSize(iconSize), colorFilter = ColorFilter.tint(ColorProvider(tint)))
         }
     }
@@ -167,26 +167,26 @@ class TodoWidget : GlanceAppWidget() {
     @androidx.compose.runtime.Composable
     private fun WidgetRow(context: Context, t: TaskEntity, today: LocalDate, accent: Color, first: Boolean) {
         GColumn(GlanceModifier.gFillMaxWidth()) {
-            if (!first) GBox(GlanceModifier.gFillMaxWidth().gPadding(start = 44.dp, end = 8.dp)) {
+            if (!first) GBox(GlanceModifier.gFillMaxWidth().gPadding(start = 40.dp, end = 8.dp)) {
                 GSpacer(GlanceModifier.gFillMaxWidth().gHeight(1.dp).gBackground(ColorProvider(C.line)))
             }
-            GRow(GlanceModifier.gFillMaxWidth().gHeight(52.dp), verticalAlignment = GAlignment.CenterVertically) {
+            GRow(GlanceModifier.gFillMaxWidth().gHeight(40.dp), verticalAlignment = GAlignment.CenterVertically) {
                 GBox(
-                    GlanceModifier.gSize(44.dp).clickable(actionRunCallback<CompleteAction>(actionParametersOf(CompleteAction.TASK to t.id))),
+                    GlanceModifier.gSize(40.dp).clickable(actionRunCallback<CompleteAction>(actionParametersOf(CompleteAction.TASK to t.id))),
                     contentAlignment = GAlignment.Center,
                 ) {
-                    Image(ImageProvider(R.drawable.ic_circle), "完成「${t.title}」", GlanceModifier.gSize(22.dp), colorFilter = ColorFilter.tint(ColorProvider(accent)))
+                    Image(ImageProvider(R.drawable.ic_circle), "完成「${t.title}」", GlanceModifier.gSize(20.dp), colorFilter = ColorFilter.tint(ColorProvider(accent)))
                 }
                 GText(
                     t.title, maxLines = 1,
-                    style = TextStyle(color = ColorProvider(C.text), fontSize = 15.sp),
-                    modifier = GlanceModifier.defaultWeight().gPadding(start = 4.dp, top = 14.dp, bottom = 14.dp).clickable(actionStartActivity(openIntent(context, t.id))),
+                    style = TextStyle(color = ColorProvider(C.text), fontSize = 14.sp),
+                    modifier = GlanceModifier.defaultWeight().gPadding(start = 2.dp, top = 10.dp, bottom = 10.dp).clickable(actionStartActivity(openIntent(context, t.id))),
                 )
                 widgetDueLabel(t, today, accent)?.let { (label, color) ->
-                    GText(label, maxLines = 1, style = TextStyle(color = ColorProvider(color), fontSize = 12.sp), modifier = GlanceModifier.gPadding(start = 6.dp))
+                    GText(label, maxLines = 1, style = TextStyle(color = ColorProvider(color), fontSize = 11.sp), modifier = GlanceModifier.gPadding(start = 6.dp))
                 }
                 GBox(
-                    GlanceModifier.gSize(44.dp).clickable(
+                    GlanceModifier.gSize(40.dp).clickable(
                         actionRunCallback<StarAction>(actionParametersOf(CompleteAction.TASK to t.id, StarAction.ON to !t.important)),
                     ),
                     contentAlignment = GAlignment.Center,
@@ -194,7 +194,7 @@ class TodoWidget : GlanceAppWidget() {
                     Image(
                         ImageProvider(if (t.important) R.drawable.ic_w_star_on else R.drawable.ic_w_star),
                         if (t.important) "取消重要「${t.title}」" else "標為重要「${t.title}」",
-                        GlanceModifier.gSize(22.dp), colorFilter = ColorFilter.tint(ColorProvider(accent)),
+                        GlanceModifier.gSize(18.dp), colorFilter = ColorFilter.tint(ColorProvider(accent)),
                     )
                 }
             }
