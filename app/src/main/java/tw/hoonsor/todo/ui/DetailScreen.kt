@@ -100,7 +100,8 @@ fun DetailScreen(state: AppState, taskId: String) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             // 標題
             Block {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // 標題太長會自動換行，圓圈和星號對齊第一行
+                Row(verticalAlignment = Alignment.Top) {
                     CheckCircle(t.done, accent, 22.dp, if (t.done) "取消完成" else "完成") { state.launch { state.repo.setCompleted(t.id, !t.done) } }
                     EditableText(t.title, Modifier.weight(1f), fontSize = 20, bold = true, done = t.done) { v -> if (v.isNotBlank()) update { it.copy(title = v.take(500)) } }
                     Box(Modifier.size(44.dp).clickable { update { it.copy(important = !it.important) } }, contentAlignment = Alignment.Center) {
@@ -111,7 +112,7 @@ fun DetailScreen(state: AppState, taskId: String) {
             // 步驟
             Block(Modifier.padding(horizontal = 4.dp)) {
                 steps.forEach { s ->
-                    Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.Top) {
                         Box(Modifier.size(40.dp).clickable { state.launch { state.repo.updateStep(s.id) { it.copy(done = !it.done) } } }, contentAlignment = Alignment.Center) {
                             Box(Modifier.size(16.dp).clip(CircleShape).background(if (s.done) accent else Color.Transparent).border(2.dp, if (s.done) accent else C.ring, CircleShape))
                         }
@@ -207,7 +208,7 @@ private fun PropRow(icon: ImageVector, label: String, sub: String?, on: Boolean,
     }
 }
 
-/** 可直接編輯的文字；停止輸入 0.8 秒或按完成後儲存 */
+/** 可直接編輯的文字；停止輸入 0.8 秒或按完成後儲存。太長會自動換行；非 multiline 時不能輸入換行，鍵盤顯示「完成」 */
 @Composable
 private fun EditableText(value: String, modifier: Modifier, fontSize: Int, bold: Boolean = false, done: Boolean = false, multiline: Boolean = false, placeholder: String = "", onSave: (String) -> Unit) {
     var text by remember(value) { mutableStateOf(value) }
@@ -220,7 +221,7 @@ private fun EditableText(value: String, modifier: Modifier, fontSize: Int, bold:
     Box(modifier.padding(vertical = if (multiline) 12.dp else 8.dp, horizontal = if (multiline) 14.dp else 0.dp)) {
         if (text.isEmpty() && placeholder.isNotEmpty()) Text(placeholder, color = C.muted, fontSize = fontSize.sp)
         BasicTextField(
-            text, { text = it }, singleLine = !multiline,
+            text, { text = if (multiline) it else it.lines().joinToString(" ") }, singleLine = false,
             textStyle = TextStyle(
                 color = if (done) C.muted else C.text, fontSize = fontSize.sp, lineHeight = (fontSize + 8).sp,
                 fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal, textDecoration = if (done) TextDecoration.LineThrough else null,
